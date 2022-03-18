@@ -80,7 +80,7 @@ class YOLO(nn.Module):
 
                 in_channels = layer[0]
 
-            elif type(layer) == 'MP':
+            elif type(layer) == str and layer == 'MP':
                 blk.append(
                     nn.MaxPool2d(kernel_size=2, stride=2)
                 )
@@ -100,7 +100,9 @@ class YOLO(nn.Module):
 
                     blk.append(
                         ConvBlock(
-                            in_channels, conv2[0], kernel_size=conv2[1],
+                            # pay attention to here!
+                            # this is conv1[0], not in_channels
+                            conv1[0], conv2[0], kernel_size=conv2[1],
                             padding=conv2[2], stride=conv2[3]
                         )
                     )
@@ -118,11 +120,6 @@ class YOLO(nn.Module):
             nn.Linear(4096, num_grid_cell * num_grid_cell * (5 * num_bbox + num_class))
         )
 
-
-def test():
-    model = YOLO(num_grid_cell=7, num_bbox=2, num_class=20)
-    x = torch.randn((1, 3, 448, 448))
-    print(model(x).shape)
 
 
 
