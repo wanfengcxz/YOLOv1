@@ -1,4 +1,5 @@
 import logging
+from torchsummary import summary
 
 
 class Logger:
@@ -22,6 +23,9 @@ class Logger:
     def get_log(self):
         return self.logger
 
+
+def model_info(model):
+    summary(model, (3, 448, 448), batch_size=1, device="cpu")
 
 
 if __name__ == '__main__':

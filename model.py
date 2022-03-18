@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from utils import model_info
 
 architecture_config = [
     # layer = (out_channels, kernel size, padding, stride)
@@ -120,8 +121,24 @@ class YOLO(nn.Module):
             nn.Linear(4096, num_grid_cell * num_grid_cell * (5 * num_bbox + num_class))
         )
 
+    def model_detail(self):
+        print(self.backbone)
+        print(self.fc)
 
+    @staticmethod
+    def display_forward():
+        model = YOLO(num_grid_cell=7, num_bbox=2, num_class=20)
+        X = torch.rand(size=(1, 3, 448, 448))
+        for layer in model.backbone:
+            X = layer(X)
+            print(layer.__class__.__name__, 'output shape:\t', X.shape)
+
+        for layer in model.fc:
+            X = layer(X)
+            print(layer.__class__.__name__, 'output shape:\t', X.shape)
 
 
 if __name__ == '__main__':
-    test()
+    # YOLO.display_forward()
+    net = YOLO(num_grid_cell=7, num_bbox=2, num_class=20)
+    model_info(net)
