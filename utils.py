@@ -30,17 +30,26 @@ def model_info(model):
     summary(model, (3, 448, 448), batch_size=1, device="cpu")
 
 
+def box_corner_to_center(boxes):
+    """从（左上，右下）转换到（中间，宽度，高度）"""
+    x1, y1, x2, y2 = boxes[0], boxes[1], boxes[2], boxes[3]
+    cx = (x1 + x2) / 2
+    cy = (y1 + y2) / 2
+    w = x2 - x1
+    h = y2 - y1
+    boxes = [cx, cy, w, h]
+    return boxes
+
+
 def iou(boxes_pred, boxes_label, mode='midpoint'):
     """
-        Calculates intersection over union
-        Parameters:
-            boxes_pred (tensor): bounding boxes (batch_size, 4)
-            boxes_label (tensor): ground truth boxes (batch_size, 4)
-            mode (str): midpoint(x,y,w,h) / corner (x1,y1,x2,y2)
-        Returns:
-            tensor: intersection over union (batch_size, 1)
+    Calculate intersection over union
+    Args:
+        boxes_pred (tensor): bounding boxes (batch_size, S, S, 4)
+        boxes_label (tensor): ground truth boxes (batch_size, S, S, 4)
+        mode (str): midpoint(x,y,w,h) / corner (x1,y1,x2,y2)
+    Returns: iou
     """
-
     # convert
     if mode == 'midpoint':
         # more detail about ... in difficulties.py(three_dots)
