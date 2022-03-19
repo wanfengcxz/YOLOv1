@@ -51,7 +51,7 @@ class ConvBlock(nn.Module):
 class YOLO(nn.Module):
     """
         YOLOv1 backbone (You Only Look Once)
-        more detail about network architecture in /img/YOLOv1_backbone1.png
+        more detail about network architecture in img/YOLOv1_backbone1.png
     """
 
     def __init__(self, in_channels=3, **kwargs):
@@ -112,13 +112,18 @@ class YOLO(nn.Module):
 
         return nn.Sequential(*blk)
 
-    def _create_fc(self, num_grid_cell, num_bbox, num_class):
+    def _create_fc(self, S=7, B=2, C=20):
+        """
+            S: S*S=num_grid_cell
+            B: num_bounding_box
+            C: num_class
+        """
         return nn.Sequential(
             nn.Flatten(),
             nn.Linear(1024 * 7 * 7, 4096),
             nn.Dropout(0.6),
             nn.LeakyReLU(0.1),
-            nn.Linear(4096, num_grid_cell * num_grid_cell * (5 * num_bbox + num_class))
+            nn.Linear(4096, S * S * (5 * B + C))
         )
 
     def model_detail(self):
@@ -127,7 +132,7 @@ class YOLO(nn.Module):
 
     @staticmethod
     def display_forward():
-        model = YOLO(num_grid_cell=7, num_bbox=2, num_class=20)
+        model = YOLO(S=7, B=2, C=20)
         X = torch.rand(size=(1, 3, 448, 448))
         for layer in model.backbone:
             X = layer(X)
@@ -140,5 +145,5 @@ class YOLO(nn.Module):
 
 if __name__ == '__main__':
     # YOLO.display_forward()
-    net = YOLO(num_grid_cell=7, num_bbox=2, num_class=20)
+    net = YOLO(S=7, B=2, C=20)
     model_info(net)
