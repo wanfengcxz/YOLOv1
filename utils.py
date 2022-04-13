@@ -69,6 +69,7 @@ def iou(boxes_pred, boxes_label, box_mode='midpoint'):
         boxes_label_y2 = boxes_label[..., 1:2] + boxes_label[..., 3:4] / 2
 
     elif box_mode == 'corner':
+        # print('corner')
         boxes_pred_x1 = boxes_pred[..., 0:1]
         boxes_pred_y1 = boxes_pred[..., 1:2]
         boxes_pred_x2 = boxes_pred[..., 2:3]
@@ -83,8 +84,10 @@ def iou(boxes_pred, boxes_label, box_mode='midpoint'):
     # more detail in img/torch_max.png and difficulties.py(torch_max)
     x_top_left = torch.max(boxes_pred_x1, boxes_label_x1)
     y_top_left = torch.max(boxes_pred_y1, boxes_label_y1)
-    x_bottom_right = torch.max(boxes_pred_x2, boxes_label_x2)
-    y_bottom_right = torch.max(boxes_pred_y2, boxes_label_y2)
+    x_bottom_right = torch.min(boxes_pred_x2, boxes_label_x2)
+    y_bottom_right = torch.min(boxes_pred_y2, boxes_label_y2)
+    # print(x_top_left,y_top_left)
+    # print(x_bottom_right,y_bottom_right)
 
     # clamp(0) will modify the element to 0 if it less than 0
     intersection = (x_bottom_right - x_top_left).clamp(0) * (y_bottom_right - y_top_left).clamp(0)
@@ -315,7 +318,6 @@ def cellboxes_to_boxes(out, S=7):
 
     # all_boxes shape: (batch_size,S*S,6)
     return all_bboxes
-
 
 if __name__ == '__main__':
     log = Logger('model').get_log
