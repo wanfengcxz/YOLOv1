@@ -47,7 +47,7 @@ def main():
     )
     loss_fn = YOLOLoss(S=7, B=2, C=1)
 
-    train_dataset = BananasDataset('data', transform=transform)
+    train_dataset = BananasDataset('data/banana-detection/bananas_val/', transform=transform)
     train_loader = DataLoader(
         dataset=train_dataset,
         batch_size=BATCH_SIZE,
