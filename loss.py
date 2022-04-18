@@ -26,7 +26,7 @@ class YOLOLoss(nn.Module):
         # every grid cell generate two bounding boxes
         # iou_bx shape: (batch_size, S, S, 1)
         iou_b1 = iou(predictions[..., self.C + 1:self.C + 5], labels[..., self.C + 1:self.C + 5])
-        iou_b2 = iou(predictions[..., self.C + 6 + self.C + 10], labels[..., self.C + 1:self.C + 5])
+        iou_b2 = iou(predictions[..., self.C + 6:self.C + 10], labels[..., self.C + 1:self.C + 5])
 
         # ious shape: (2, batch_size, S, S, 1)
         ious = torch.cat([iou_b1.unsqueeze(0), iou_b2.unsqueeze(0)], dim=0)
@@ -53,9 +53,10 @@ class YOLOLoss(nn.Module):
         box_predictions[..., 2:4] = torch.sign(box_predictions[..., 2:4]) * torch.sqrt(
             torch.abs(box_predictions[..., 2:4] + 1e-6))
 
-        box_labels = torch.sqrt(box_labels[..., 2:4])
+        box_labels[..., 2:4] = torch.sqrt(box_labels[..., 2:4])
 
         # more detail about torch.flatten in difficulties.py(torch_flatten)
+        # default start_dim is 0
         box_loss = self.mse(
             torch.flatten(box_predictions, end_dim=-2),
             torch.flatten(box_labels, end_dim=-2)
