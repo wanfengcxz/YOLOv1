@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+
+import utils
 from utils import model_info
 
 architecture_config = [
@@ -23,7 +25,7 @@ architecture_config = [
     (1024, 3, 1, 1),
     (1024, 3, 1, 2),  # (1024,7,7) (14-3+1*2)/2+1=7 discard the last element
     (1024, 3, 1, 1),
-    (1024, 3, 1, 1)
+    (512, 3, 1, 1)
 ]
 
 
@@ -120,30 +122,29 @@ class YOLO(nn.Module):
         """
         return nn.Sequential(
             nn.Flatten(),
-            nn.Linear(1024 * 7 * 7, 4096),
+            nn.Linear(512 * 7 * 7, 2048),
             nn.Dropout(0.6),
             nn.LeakyReLU(0.1),
-            nn.Linear(4096, S * S * (5 * B + C))
+            nn.Linear(2048, S * S * (5 * B + C))
         )
 
     def model_detail(self):
         print(self.backbone)
         print(self.fc)
 
-    @staticmethod
-    def display_forward():
-        model = YOLO(S=7, B=2, C=20)
-        X = torch.rand(size=(1, 3, 448, 448))
-        for layer in model.backbone:
-            X = layer(X)
-            print(layer.__class__.__name__, 'output shape:\t', X.shape)
 
-        for layer in model.fc:
-            X = layer(X)
-            print(layer.__class__.__name__, 'output shape:\t', X.shape)
+def test_model_forward():
+    model = YOLO(S=7, B=2, C=1)
+    model_info(model)
+    X = torch.rand(size=(1, 3, 448, 448))
+    for layer in model.backbone:
+        X = layer(X)
+        print(layer.__class__.__name__, 'output shape:\t', X.shape)
+
+    for layer in model.fc:
+        X = layer(X)
+        print(layer.__class__.__name__, 'output shape:\t', X.shape)
 
 
 if __name__ == '__main__':
-    # YOLO.display_forward()
-    net = YOLO(S=7, B=2, C=20)
-    model_info(net)
+    test_model_forward()
