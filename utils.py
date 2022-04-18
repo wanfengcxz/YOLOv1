@@ -79,7 +79,6 @@ def iou(boxes_pred, boxes_label, box_mode='midpoint'):
         boxes_label_x2 = boxes_label[..., 2:3]
         boxes_label_y2 = boxes_label[..., 3:4]
 
-
     # Calculates intersection
     # more detail in img/torch_max.png and difficulties.py(torch_max)
     x_top_left = torch.max(boxes_pred_x1, boxes_label_x1)
@@ -102,6 +101,7 @@ def plot_image(image, boxes, box_mode, box_color='r'):
     """
     Plot the bounding box in the image.
     Args:
+        box_mode: midpoint
         image: image
         boxes(list): the coordinate is [class_pred, obj_confidence, x, y, width, height] and its values is between 0 and 1.
         box_color: the color of the rectangle
@@ -137,7 +137,6 @@ def get_bboxes(
         model,
         iou_threshold,
         threshold,
-        pred_format='cells',
         box_mode='midpoint',
         device='cuda'
 ):
@@ -154,6 +153,7 @@ def get_bboxes(
             predictions = model(x)
 
         batch_size = x.shape[0]
+        predictions.to('cpu')
 
         # converts its ratios and its type(tensor to list)
         # shape is (batch_size, S*S, 6)
@@ -176,14 +176,12 @@ def get_bboxes(
                 all_pred_boxes.append([train_img_idx] + nms_box)
             for box in true_bboxes[idx]:
                 if box[1] > threshold:
-                    all_true_boxes.append([train_img_idx]+box)
+                    all_true_boxes.append([train_img_idx] + box)
 
             train_img_idx += 1
 
     model.train()
     return all_pred_boxes, all_true_boxes
-
-
 
 
 def nms(bboxes, iou_threshold, threshold, box_mode):
@@ -238,7 +236,6 @@ def convert_cellboxes(predictions, C):
     """
     S = 7
     B = 2
-    predictions = predictions.to('cpu')
     batch_size = predictions.shape[0]
     predictions = predictions.reshape(batch_size, S, S, B * 5 + C)
 
@@ -318,6 +315,44 @@ def cellboxes_to_boxes(out, S=7):
 
     # all_boxes shape: (batch_size,S*S,6)
     return all_bboxes
+
+
+# def mean_average_precision(
+#         pred_boxes, true_boxes, iou_threshold=0.5, box_mode='midpoint', num_classes=1
+# ):
+#     """
+#     Calculates mean average precision
+#     Args:
+#         pred_boxes (list):
+#         true_boxes:
+#         iou_threshold:
+#         box_mode:
+#         num_classes:
+#
+#     Returns:
+#         mAP value
+#     """
+#     # list for storing all AP for respective classes
+#     average_precisions = []
+#
+#     # used for numerical stability later on
+#     epsilon = 1e-6
+#
+#     for c in range(num_classes):
+#         detections = []
+#         ground_truths = []
+#
+#         for detection in pred_boxes:
+#             if detection[1] == c:
+#                 detections.append(detection)
+#
+#         for true_box in true_boxes:
+#             if true_box[1] == c:
+#                 ground_truths.append(true_box)
+#
+#
+#
+#
 
 if __name__ == '__main__':
     log = Logger('model').get_log
