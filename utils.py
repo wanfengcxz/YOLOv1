@@ -3,7 +3,6 @@ import torch
 from torchsummary import summary
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
 
 class Logger:
@@ -97,7 +96,7 @@ def iou(boxes_pred, boxes_label, box_mode='midpoint'):
     return intersection / (boxes_pred_area + boxes_label_area - intersection + 1e-6)
 
 
-def plot_image(image, boxes, box_mode, box_color='r'):
+def plot_image(image, boxes, box_mode, box_color='w'):
     """
     Plot the bounding box in the image.
     Args:
@@ -109,17 +108,17 @@ def plot_image(image, boxes, box_mode, box_color='r'):
 
     img = np.array(image)
     height, width, _ = img.shape
-    fig, ax = plt.subplots(1)
-    ax.imshow(img)
+    fig = plt.imshow(img)
 
     for box in boxes:
+        score = box[1]
         box = box[2:]
         if box_mode == 'corner':
             box = box_corner_to_center(box)
         assert len(box) == 4, 'Got more values than in x, y, w, h, in a box!'
         top_left_x = box[0] - box[2] / 2
         top_left_y = box[1] - box[3] / 2
-        rect = patches.Rectangle(
+        rect = plt.Rectangle(
             (top_left_x * width, top_left_y * height),
             box[2] * width,
             box[3] * height,
@@ -127,7 +126,9 @@ def plot_image(image, boxes, box_mode, box_color='r'):
             edgecolor=box_color,
             facecolor='none'
         )
-        ax.add_patch(rect)
+        fig.axes.add_patch(rect)
+        fig.axes.text(top_left_x * width, top_left_y * height, '%.2f' % score,
+                      bbox={'facecolor': 'white', 'alpha': 0.9})
 
     plt.show()
 
