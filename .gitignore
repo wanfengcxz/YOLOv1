@@ -133,3 +133,5 @@ dmypy.json
 doc/
 .idea/
 data/
+img/test
+server/img
